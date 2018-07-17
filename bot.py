@@ -38,9 +38,13 @@ def tweet(handle, text, media):
     print("Tweeting in {} seconds.".format(min_delay))
     sleep(min_delay)
 
-    message = "{}: {}".format(user, text)
+    message = "{}: {} {}".format(user, text, get_hashtags(text))
     api.update_with_media(media, status=message)
-    # os.remove(media)
+    os.remove(media)
+
+
+def get_hashtags(text):
+    return "#funny #humor"
 
 
 if __name__ == '__main__':
