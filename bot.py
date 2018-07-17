@@ -40,7 +40,7 @@ def tweet(handle, text, media):
 
     message = "{}: {}".format(user, text)
     api.update_with_media(media, status=message)
-    os.remove(media)
+    # os.remove(media)
 
 
 if __name__ == '__main__':
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
                     post_type = child['data']['url'].split('.')[-1]
-                    media_file = 'downloads/{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
+                    media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
                     if child['data']['title'] not in in_db and post_type in post_types:
                         with urllib.request.urlopen(child['data']['url']) as post, \
                                 open(media_file, 'wb') as out_file:
