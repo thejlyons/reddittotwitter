@@ -1,13 +1,18 @@
-from urllib.parse import urlparse
 from datetime import datetime, timedelta
 from time import sleep
 import random
-import tweepy
+import os
+from urllib.parse import urlparse
+import urllib.request
+import json
+import urllib.request
+import shutil
 import psycopg2
 import pytz
-import os
+import tweepy
 
 api = None
+post_types = ['jpg', 'gif', 'gifv', 'png']
 times = os.environ.get('TIMES').split(",")
 
 
@@ -22,12 +27,20 @@ def time_to_tweet():
     return False
 
 
-def tweet(text):
+def tweet(handle, text, media):
+    user = '/u/{}'.format(handle)
+    try:
+        api.get_user(handle)
+        user = '@{}'.format(handle)
+    except Exception:
+        pass
     min_delay = random.randint(1, 20 * 60)
     print("Tweeting in {} seconds.".format(min_delay))
     sleep(min_delay)
 
-    api.update_status(text)
+    message = "{}: {}".format(user, text)
+    api.update_with_media(media, status=message)
+    os.remove(media)
 
 
 if __name__ == '__main__':
@@ -57,24 +70,28 @@ if __name__ == '__main__':
             )
             cur = conn.cursor()
 
-            cur.execute("SELECT count(*) FROM tshirts")
-            count = cur.fetchone()[0]
-
-            cur.execute("SELECT * from tshirts WHERE priority_order = 0")
-            top_row = cur.fetchone()
-            tshirt = TShirt(top_row[1], top_row[2], top_row[3], top_row[4], top_row[5], top_row[6])
-
-            tweet(tshirt.get_tweet())
-            po = min(int(count * tshirt.priority()), count - 1)
-
-            cur.execute('SELECT * FROM tshirts WHERE priority_order < {}'.format(po + 1))
+            cur.execute("DELETE FROM {} WHERE stamp < NOW() - interval '25 hours'".format(os.environ['DB_TABLE']))
+            cur.execute("SELECT * from {}".format(os.environ['DB_TABLE']))
             rows = cur.fetchall()
-            for row in rows:
-                cur.execute("UPDATE tshirts SET priority_order = %s WHERE id = %s", (max(0, row[-1] - 1), row[0]))
+            in_db = [row[1] for row in rows]
 
-            cur.execute("UPDATE tshirts SET tweets = %s, new = %s, priority_order = %s where id = %s",
-                        (tshirt.tweets, tshirt.new, po, top_row[0]))
+            url = "https://www.reddit.com/r/{}/top/.json?t=day".format(os.environ['SUBREDDIT'])
+            hdr = {'User-Agent': '/r/{} scraper by /u/{}'.format(os.environ['SUBREDDIT'], os.environ['REDDIT_USER'])}
+            req = urllib.request.Request(url, headers=hdr)
 
+            with urllib.request.urlopen(req) as response:
+                data = json.loads(response.read().decode())
+                for child in data['data']['children']:
+                    post_type = child['data']['url'].split('.')[-1]
+                    media_file = 'downloads/{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
+                    if child['data']['title'] not in in_db and post_type in post_types:
+                        with urllib.request.urlopen(child['data']['url']) as post, \
+                                open(media_file, 'wb') as out_file:
+                            shutil.copyfileobj(post, out_file)
+                        cur.execute("INSERT INTO {} (title) VALUES ('{}')"
+                                    .format(os.environ['DB_TABLE'], child['data']['title']))
+                        tweet(child['data']['author'], child['data']['title'], media_file)
+                        break
             conn.commit()
             conn.close()
             sleep(60 * 6)
