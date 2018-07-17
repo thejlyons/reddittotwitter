@@ -54,7 +54,7 @@ if __name__ == '__main__':
     auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
     api = tweepy.API(auth)
 
-    result = urlparse(os.environ.get('DB_URL'))
+    result = urlparse(os.environ.get('DATABASE_URL'))
     username = result.username
     password = result.password
     database = result.path[1:]
