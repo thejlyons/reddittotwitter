@@ -87,14 +87,13 @@ if __name__ == '__main__':
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
                     post_type = child['data']['url'].split('.')[-1]
-                    title = child['data']['title']
+                    text = child['data']['title']
                     media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
-                    if title not in in_db and post_type in post_types:
-                        with urllib.request.urlopen(child['data']['url']) as post, \
-                                open(media_file, 'wb') as out_file:
+                    if text not in in_db and post_type in post_types:
+                        with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
                             shutil.copyfileobj(post, out_file)
-                        cur.execute("INSERT INTO {} (title) VALUES (%s)".format(os.environ['DB_TABLE']), title)
-                        tweet(child['data']['author'], child['data']['title'], media_file)
+                        cur.execute("INSERT INTO {} (title) VALUES (%s)".format(os.environ['DB_TABLE']), text)
+                        tweet(child['data']['author'], text, media_file)
                         break
             conn.commit()
             conn.close()
