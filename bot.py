@@ -92,7 +92,7 @@ if __name__ == '__main__':
                     if text not in in_db and post_type in post_types:
                         with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
                             shutil.copyfileobj(post, out_file)
-                        cur.execute("INSERT INTO {} (title) VALUES".format(os.environ['DB_TABLE']) + " (%s)", text)
+                        cur.execute("INSERT INTO rfunny (title) VALUES (%s)", text)
                         tweet(child['data']['author'], text, media_file)
                         break
             conn.commit()
