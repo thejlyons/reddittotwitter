@@ -44,7 +44,7 @@ def tweet(handle, text, media):
 
 
 def get_hashtags(text):
-    return "#funny #humor"
+    return "#funny #humor #hilarious #lol #haha #lmao #lmfao #rofl"
 
 
 if __name__ == '__main__':
@@ -92,8 +92,7 @@ if __name__ == '__main__':
                         with urllib.request.urlopen(child['data']['url']) as post, \
                                 open(media_file, 'wb') as out_file:
                             shutil.copyfileobj(post, out_file)
-                        cur.execute("INSERT INTO {} (title) VALUES ('{}')"
-                                    .format(os.environ['DB_TABLE'], child['data']['title']))
+                        cur.execute("INSERT INTO %s (title) VALUES (%s)", os.environ['DB_TABLE'], child['data']['title'])
                         tweet(child['data']['author'], child['data']['title'], media_file)
                         break
             conn.commit()
