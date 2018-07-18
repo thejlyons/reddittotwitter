@@ -12,7 +12,8 @@ import pytz
 import tweepy
 
 api = None
-post_types = ['jpg', 'gif', 'gifv', 'png']
+# TODO: Convert gifv to gif
+post_types = ['jpg', 'gif', 'png']
 times = os.environ.get('TIMES').split(",")
 
 
