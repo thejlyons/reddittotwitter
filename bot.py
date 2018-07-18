@@ -29,11 +29,11 @@ def time_to_tweet():
 
 def tweet(handle, text, media):
     user = '/u/{}'.format(handle)
-    try:
-        api.get_user(handle)
-        user = '@{}'.format(handle)
-    except Exception:
-        pass
+    # try:
+    #     api.get_user(handle)
+    #     user = '@{}'.format(handle)
+    # except Exception:
+    #     pass
     min_delay = random.randint(1, 20 * 60)
     print("Tweeting in {} seconds.".format(min_delay))
     sleep(min_delay)
