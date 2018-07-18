@@ -36,7 +36,7 @@ def tweet(handle, text, media):
     #     pass
     min_delay = random.randint(1, 20 * 60)
     message = "{}: {} {}".format(user, text, get_hashtags(text))
-    print("Tweeting in {} seconds: '{}'".format(min_delay, message))
+    print("Tweeting in {} seconds: '{}' with {}".format(min_delay, message, media))
     sleep(min_delay)
 
     api.update_with_media(media, status=message)
