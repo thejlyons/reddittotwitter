@@ -35,8 +35,10 @@ def tweet(handle, text, media):
     #     user = '@{}'.format(handle)
     # except Exception:
     #     pass
-    min_delay = random.randint(1, 20 * 60)
     message = "{}: {} {}".format(user, text, get_hashtags(text))
+    while len(message) > 280:
+        message = "#".join(message.split("#")[:-1])
+    min_delay = random.randint(1, 20 * 60)
     print("Tweeting in {} seconds: '{}' with {}".format(min_delay, message, media))
     sleep(min_delay)
 
