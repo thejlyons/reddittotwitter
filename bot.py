@@ -13,7 +13,9 @@ import tweepy
 
 api = None
 # TODO: Convert gifv to gif
-post_types = ['jpg', 'gif', 'png', 'imgur']
+# TODO: Shrink files that are too large (larger than 3072kb)
+post_types = ['jpg', 'gif', 'png', 'link']
+link_types = ['imgur', 'youtube']
 times = os.environ.get('TIMES').split(",")
 
 
@@ -21,8 +23,8 @@ def time_to_tweet():
     for time in times:
         time = [int(t) for t in time.split(":")]
         now = datetime.now(pytz.timezone('US/Mountain'))
-        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-5)
-        end = start + timedelta(minutes=10)
+        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-os.environ['TIME_DELAY'] / 2)
+        end = start + timedelta(minutes=os.environ['TIME_DELAY'])
         if start <= now < end:
             return True
     return False
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     hostname = result.hostname
 
     while True:
-        if time_to_tweet() or True:
+        if time_to_tweet():
             conn = psycopg2.connect(
                 database=database,
                 user=username,
@@ -95,12 +97,12 @@ if __name__ == '__main__':
                     text = child['data']['title']
                     post_type = child['data']['url'].split('.')[-1]
                     media_file = None
-                    if 'imgur' in child['data']['url']:
-                        post_type = 'imgur'
+                    if any(link_type in child['data']['url'] for link_type in link_types):
+                        post_type = 'link'
                     else:
                         media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
                     if text not in in_db and post_type in post_types:
-                        if post_type != 'imgur':
+                        if post_type != 'link':
                             with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
                                 shutil.copyfileobj(post, out_file)
                         else:
@@ -110,5 +112,5 @@ if __name__ == '__main__':
                         break
             conn.commit()
             conn.close()
-            sleep(60 * 6)
-        sleep(60 * 5)
+            sleep(60 * (os.environ['LOOP_DELAY'] + 1)
+        sleep(60 * os.environ['LOOP_DELAY'])
