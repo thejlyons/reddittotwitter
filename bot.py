@@ -40,7 +40,7 @@ def tweet(handle, text, media):
     message = "{}: {} {}".format(user, text, get_hashtags(text))
     while len(message) > 280:
         message = "#".join(message.split("#")[:-1])
-    min_delay = random.randint(1, os.environ["TIME_DELAY"] * 60)
+    min_delay = random.randint(1, int(os.environ["TIME_DELAY"]) * 60)
     print("Tweeting in {} seconds: '{}' with {}".format(min_delay, message, media))
     sleep(min_delay)
 
@@ -112,5 +112,5 @@ if __name__ == '__main__':
                         break
             conn.commit()
             conn.close()
-            sleep(60 * (os.environ['LOOP_DELAY'] + 1)
-        sleep(60 * os.environ['LOOP_DELAY'])
+            sleep(60 * (int(os.environ['LOOP_DELAY']) + 1))
+        sleep(60 * int(os.environ['LOOP_DELAY']))
