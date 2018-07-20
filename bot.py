@@ -99,14 +99,13 @@ if __name__ == '__main__':
                     media_file = None
                     if any(link_type in child['data']['url'] for link_type in link_types):
                         post_type = 'link'
+                        text += " {}".format(child['data']['url'])
                     else:
                         media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
                     if text not in in_db and post_type in post_types:
                         if post_type != 'link':
                             with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
                                 shutil.copyfileobj(post, out_file)
-                        else:
-                            text += " {}".format(child['data']['url'])
                         cur.execute("""INSERT INTO %s (title) VALUES (%%s)""" % os.environ['DB_TABLE'], [text])
                         tweet(child['data']['author'], text, media_file)
                         break
