@@ -23,8 +23,8 @@ def time_to_tweet():
     for time in times:
         time = [int(t) for t in time.split(":")]
         now = datetime.now(pytz.timezone('US/Mountain'))
-        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-5)
-        end = start + timedelta(minutes=10)
+        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-int(os.environ['LOOP_DELAY']))
+        end = start + timedelta(minutes=int(os.environ['LOOP_DELAY']) * 2)
         if start <= now < end:
             return True
     return False
