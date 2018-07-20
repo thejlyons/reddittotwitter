@@ -13,7 +13,7 @@ import tweepy
 
 api = None
 # TODO: Convert gifv to gif
-post_types = ['jpg', 'gif', 'png']
+post_types = ['jpg', 'gif', 'png', 'imgur']
 times = os.environ.get('TIMES').split(",")
 
 
@@ -42,12 +42,15 @@ def tweet(handle, text, media):
     print("Tweeting in {} seconds: '{}' with {}".format(min_delay, message, media))
     sleep(min_delay)
 
-    api.update_with_media(media, status=message)
-    os.remove(media)
+    if media:
+        api.update_with_media(media, status=message)
+        os.remove(media)
+    else:
+        api.update_status(message)
 
 
 def get_hashtags(text):
-    return "#funny #humor #hilarious #lol #haha #lmao #lmfao #rofl"
+    return os.environ["HASHTAGS"]
 
 
 if __name__ == '__main__':
@@ -68,7 +71,7 @@ if __name__ == '__main__':
     hostname = result.hostname
 
     while True:
-        if time_to_tweet():
+        if time_to_tweet() or True:
             conn = psycopg2.connect(
                 database=database,
                 user=username,
@@ -89,12 +92,19 @@ if __name__ == '__main__':
             with urllib.request.urlopen(req) as response:
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
-                    post_type = child['data']['url'].split('.')[-1]
                     text = child['data']['title']
-                    media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
+                    post_type = child['data']['url'].split('.')[-1]
+                    media_file = None
+                    if 'imgur' in child['data']['url']:
+                        post_type = 'imgur'
+                    else:
+                        media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
                     if text not in in_db and post_type in post_types:
-                        with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
-                            shutil.copyfileobj(post, out_file)
+                        if post_type != 'imgur':
+                            with urllib.request.urlopen(child['data']['url']) as post, open(media_file, 'wb') as out_file:
+                                shutil.copyfileobj(post, out_file)
+                        else:
+                            text += " {}".format(child['data']['url'])
                         cur.execute("""INSERT INTO %s (title) VALUES (%%s)""" % os.environ['DB_TABLE'], [text])
                         tweet(child['data']['author'], text, media_file)
                         break
