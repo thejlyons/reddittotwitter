@@ -95,7 +95,7 @@ if __name__ == '__main__':
             with urllib.request.urlopen(req) as response:
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
-                    text = str(child['data']['title'], "utf-8")
+                    text = child['data']['title'].encode()
                     post_type = child['data']['url'].split('.')[-1]
                     media_file = None
                     if any(link_type in child['data']['url'] for link_type in link_types):
