@@ -80,6 +80,7 @@ if __name__ == '__main__':
                 password=password,
                 host=hostname
             )
+            conn.set_client_encoding('UTF8')
             cur = conn.cursor()
 
             cur.execute("DELETE FROM {} WHERE stamp < NOW() - interval '25 hours'".format(os.environ['DB_TABLE']))
@@ -94,7 +95,7 @@ if __name__ == '__main__':
             with urllib.request.urlopen(req) as response:
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
-                    text = child['data']['title']
+                    text = str(child['data']['title'], "utf-8")
                     post_type = child['data']['url'].split('.')[-1]
                     media_file = None
                     if any(link_type in child['data']['url'] for link_type in link_types):
