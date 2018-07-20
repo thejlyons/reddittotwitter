@@ -23,8 +23,8 @@ def time_to_tweet():
     for time in times:
         time = [int(t) for t in time.split(":")]
         now = datetime.now(pytz.timezone('US/Mountain'))
-        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-os.environ['TIME_DELAY'] / 2)
-        end = start + timedelta(minutes=os.environ['TIME_DELAY'])
+        start = now.replace(hour=time[0], minute=time[1], second=0) + timedelta(minutes=-5)
+        end = start + timedelta(minutes=10)
         if start <= now < end:
             return True
     return False
@@ -40,7 +40,7 @@ def tweet(handle, text, media):
     message = "{}: {} {}".format(user, text, get_hashtags(text))
     while len(message) > 280:
         message = "#".join(message.split("#")[:-1])
-    min_delay = random.randint(1, 20 * 60)
+    min_delay = random.randint(1, os.environ["TIME_DELAY"] * 60)
     print("Tweeting in {} seconds: '{}' with {}".format(min_delay, message, media))
     sleep(min_delay)
 
