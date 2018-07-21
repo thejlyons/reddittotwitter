@@ -96,11 +96,14 @@ if __name__ == '__main__':
                 data = json.loads(response.read().decode())
                 for child in data['data']['children']:
                     text = child['data']['title']
-                    post_type = child['data']['url'].split('.')[-1]
+                    post_type = child['data']['url'].split('.')[-1].lower()
                     media_file = None
                     if any(link_type in child['data']['url'] for link_type in link_types):
                         post_type = 'link'
-                        text += " {}".format(child['data']['url'])
+                        link = child['data']['url']
+                        if "." in link.split("/")[-1]:
+                            link = ".".join(link.split(".")[:-1])
+                        text += " {}".format(link)
                     else:
                         media_file = '{:%Y%m%d-%H%M}.{}'.format(datetime.now(), post_type)
                     if text not in in_db and post_type in post_types:
